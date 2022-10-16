@@ -10,11 +10,15 @@ def getBigGraph(Graphs):
     if Na==1:
         return 1,Nnet,L1,L2
 
+    #check maximum number of nodes
+    if Na>1000:
+        raise Exception('Too many graphs. Max 1000 graphs supported.')
+
     for g in Graphs[1:]:
         nL1,nL2=toLL(g)
         #chekc if grpahs have the same number of nodes
         if nL2.size-1!=Nnet:
-            raise ValueError('Graphs have different number of nodes')
+            raise Exception('Graphs have different number of nodes.')
 
         n=L2.size-1
         L1=np.concatenate((L1,nL1+n))
