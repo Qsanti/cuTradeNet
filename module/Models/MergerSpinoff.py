@@ -1,14 +1,14 @@
 import numpy as np
 from numba import cuda
 from numba.cuda.random import create_xoroshiro128p_states
-from .Kernels.kYS import gpu_MCS,gpu_MCSfollow,gpu_MCSplus
+from .Kernels.kMS import gpu_MCS,gpu_MCSfollow,gpu_MCSplus
 from time import time
 from .Utils import GraphManager as gm
 import igraph as ig
 from networkx import Graph as nxGraph
 
-class YSNetModel:
-    def __init__(self,G,f):
+class MSNetModel:
+    def __init__(self,G):
         '''Create a new YS model with the given graph or list of graphs and f'''
 
         if type(G)==list:
@@ -37,7 +37,7 @@ class YSNetModel:
         self.tL1=L1
         self.tL2=L2
         self.N=L2.size-1
-        self.f=f
+        self.f=0
         self.threadsperblock=1024
         self.blockspergrid=self.Na
 
