@@ -9,7 +9,8 @@ from networkx import Graph as nxGraph
 
 class MSNetModel:
     def __init__(self,G):
-        '''Create a new YS model with the given graph or list of graphs and f'''
+        '''Create a new Merger-Spinoff model with the given graph or list of graphs
+        G: igraph/ntworkx graph or list of igraph/networkx graphs'''
 
         if type(G)==list:
             if type(G[0])==nxGraph:

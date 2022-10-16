@@ -18,7 +18,7 @@ def getBigGraph(Graphs):
         nL1,nL2=toLL(g)
         #chekc if grpahs have the same number of nodes
         if nL2.size-1!=Nnet:
-            raise Exception('Graphs have different number of nodes.')
+            raise Exception('Graphs cannot have different number of nodes.')
 
         n=L2.size-1
         L1=np.concatenate((L1,nL1+n))

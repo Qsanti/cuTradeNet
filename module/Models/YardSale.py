@@ -9,7 +9,9 @@ from networkx import Graph as nxGraph
 
 class YSNetModel:
     def __init__(self,G,f):
-        '''Create a new YS model with the given graph or list of graphs and f'''
+        '''Create a new YS model with the given graph or list of graphs and f value
+        G: igraph/ntworkx graph or list of igraph/networkx graphs
+        f: social protection factor'''
 
         if type(G)==list:
             if type(G[0])==nxGraph:
@@ -31,6 +33,9 @@ class YSNetModel:
 
         else:
             raise Exception('Unknown graph type. Use igraph or networkx graph.')
+
+        if Nnet>1024:
+            raise Exception('Graphs cannot be bigger than 1024 nodes for gpu compatibility')
             
         self.Nnet=Nnet
         self.Na=Na
