@@ -32,6 +32,9 @@ class MSNetModel:
 
         else:
             raise Exception('Unknown graph type. Use igraph or networkx graph.')
+
+        if Nnet>1024:
+            raise Exception('Graphs cannot be bigger than 1024 nodes for gpu compatibility')
             
         self.Nnet=Nnet
         self.Na=Na
