@@ -185,6 +185,3 @@ class MSNetModel:
 
 
         return (self.Nnet + 1 - 2 * np.sum(cumx,axis=1) / cumx[:,-1]) / self.Nnet
-
-        
-        pass
