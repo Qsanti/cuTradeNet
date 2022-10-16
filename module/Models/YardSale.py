@@ -1,9 +1,9 @@
 import numpy as np
 from numba import cuda
 from numba.cuda.random import create_xoroshiro128p_states
-from Kernels.kYS import gpu_MCS,gpu_MCSfollow,gpu_MCSplus
+from .Kernels.kYS import gpu_MCS,gpu_MCSfollow,gpu_MCSplus
 from time import time
-import GraphManager as gm
+from .Utils import GraphManager as gm
 import igraph as ig
 from networkx import Graph as nxGraph
 
@@ -15,14 +15,14 @@ class YSNetModel:
             Na,Nnet,L1,L2=gm.getBigGraph(G)
 
         elif type(G)==ig.Graph:
-            L1,L2=gm.getLL(G)
+            L1,L2=gm.toLL(G)
             Nnet=L2.size-1
             Na=1
 
         #if its networkx graph convert to igraph
         elif type(G)==nxGraph:
             G=ig.Graph.from_networkx(G)
-            L1,L2=gm.getLL(G)
+            L1,L2=gm.toLL(G)
             Nnet=L2.size-1
             Na=1
 

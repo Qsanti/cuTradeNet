@@ -1,0 +1,1 @@
+from .YardSale import YSNetModel as YardSale
