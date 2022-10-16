@@ -136,7 +136,6 @@ class YSNetModel:
     def modifyGraph(self,G):
         '''Modify the graph of the model'''
         pass
-
       
     def termalize(self,M):
         '''Termalize the model for M montecarlo steps
@@ -169,6 +168,19 @@ class YSNetModel:
 
         return Wi
 
-    def getGini():
+    def getGini(self):
         '''Return the Gini coefficient of the actual wealth distribution'''
+        x=self.d_Nwealths.copy_to_host()
+        #divide x in self.Na parts
+        x=x.reshape(self.Na,self.Nnet)
+
+        #sort each part
+        sorted_x = np.sort(x,axis=1)
+        #calculate the cumulative sum of each part
+        cumx = np.cumsum(sorted_x, dtype=np.float32, axis=1)
+
+
+        return (self.Nnet + 1 - 2 * np.sum(cumx,axis=1) / cumx[:,-1]) / self.Nnet
+
+        
         pass
