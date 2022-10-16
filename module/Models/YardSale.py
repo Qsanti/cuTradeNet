@@ -1,6 +1,7 @@
 import numpy as np
 from numba import cuda
-from numba.cuda.random import create_xoroshiro128p_states, xoroshiro128p_uniform_float32
+from numba.cuda.random import create_xoroshiro128p_states
+from Kernels.kYS import gpu_MCS,gpu_MCSfollow,gpu_MCSplus
 from time import time
 import GraphManager as gm
 import igraph as ig
@@ -8,6 +9,7 @@ from networkx import Graph as nxGraph
 
 class YSNetModel:
     def __init__(self,G,f):
+        '''Create a new YS model with the given graph or list of graphs and f'''
 
         if type(G)==list:
             Na,Nnet,L1,L2=gm.getBigGraph(G)
@@ -56,16 +58,31 @@ class YSNetModel:
         self.reset()
 
 
-    def reset(self,type='uniform',r=0.1):
-        if type=='uniform':
-            Nwealths=np.random.uniform(0,1,self.N)
-            Nrisks=np.random.uniform(0,1,self.N)
+    def reset(self,wealth_type='uniform',risk_type='hetereogeneus',r=0.1):
+        '''
+        Reset the model to random state in risks and wealths. 
+        wealth_type: 'uniform' or 'normal'
+        risk_type: 'uniform' or 'hetereogeneus'
+        r: if risk_type is 'homogeneus' this is the risk for all agents
+        '''
 
-        elif type=='constant':
+        if risk_type=='hetereogeneus':
+            Nrisks=np.random.uniform(0,1,self.N)
+        elif risk_type=='homogeneus':
             Nwealths=np.ones(self.N)
             Nrisks=np.ones(self.N)*r
+        else:
+            raise Exception('''Unsupported risk type. Use 'hetereogeneus' or 'homogeneus'.''')
+
+        if wealth_type=='uniform':
+            Nwealths=np.random.uniform(0,1,self.N)
+        elif wealth_type=='equal':
+            Nwealths=np.ones(self.N)
+        else:
+            raise Exception('''Unsupported wealth type. Use 'uniform' or 'equal'.''')
 
         Nwealths=Nwealths/np.sum(Nwealths)
+
         for l in range(self.Na):
             Nwealths[l*self.Nnet:(l+1)*self.Nnet]=Nwealths[l*self.Nnet:(l+1)*self.Nnet]/np.sum(Nwealths[l*self.Nnet:(l+1)*self.Nnet])
         Nwealths=Nwealths.astype(np.float32)
@@ -78,42 +95,58 @@ class YSNetModel:
         cuda.to_device(self.tL2.astype(np.int32),to=self.d_L2)
 
     def getWealths(self):
+        '''Return the wealths of the agents'''
         return self.d_Nwealths.copy_to_host()
 
     def getRisks(self):
+        '''Return the risks of the agents'''
         return self.d_Nrisks.copy_to_host()
 
     def setRisks(self,R):
+        '''Set the risks of the agents
+        R: array of risks in the same order as the agents'''
         cuda.to_device(R.astype(np.float32),to=self.d_Nrisks)
 
     def setWealths(self,W):
+        '''Set the wealths of the agents
+        W: array of wealths in the same order as the agents'''
         cuda.to_device(W.astype(np.float32),to=self.d_Nwealths)
 
     def setRisk(self,A,r):
+        '''Set the risk of the agents indexed by A to r
+        A: indexes of the agents Ex: [1,2,3]
+        r: risk to set or array of risks Ex: 0.1 or [0.1,0.2,0.3]''' 
+        R=self.getRisks()
+        R[A]=r
+        self.setRisks(R)
         Nrisks=self.d_Nrisks.copy_to_host()
         Nrisks[A]=r
         Nrisks=Nrisks.astype(np.float32)
         cuda.to_device(Nrisks,to=self.d_Nrisks)
 
     def setWealth(self,A,w):
+        '''Set the wealth of the agents indexed by A to w
+        A: indexes of the agents Ex: [1,2,3]
+        w: wealth to set or array of wealths Ex: 0.1 or [0.1,0.2,0.3]''' 
         Nwealths=self.d_Nwealths.copy_to_host()
         Nwealths[A]=w
         Nwealths=Nwealths.astype(np.float32)
         cuda.to_device(Nwealths,to=self.d_Nwealths)
 
-    def loadNeigh(self,L1,L2):
-        self.tL1=L1
-        self.tL2=L2
-        self.d_L1=cuda.device_array(self.tL1.size,dtype=np.int32)
-        self.d_L2=cuda.device_array(self.tL2.size,dtype=np.int32)
-        cuda.to_device(self.tL1.astype(np.int32),to=self.d_L1)
-        cuda.to_device(self.tL2.astype(np.int32),to=self.d_L2)
+    def modifyGraph(self,G):
+        '''Modify the graph of the model'''
+        pass
 
+      
     def termalize(self,M):
+        '''Termalize the model for M montecarlo steps
+        M: number of montecarlo steps'''
         gpu_MCS[self.blockspergrid,self.threadsperblock](self.d_Nwealths,self.d_Nrisks,self.d_SI,self.d_SJ,self.f,self.d_L1,self.d_L2,self.rng_states,M,self.Nnet,self.Na)
         cuda.synchronize()
 
     def epoch(self,M):
+        '''Make an epoch of M montecarlo steps returning the mean temporal wealths in each agent
+        M: number of montecarlo steps'''
         Nwi=np.zeros(self.N)
         Nwi=Nwi.astype(np.float32)
         cuda.to_device(Nwi,to=self.d_Nwi)
@@ -123,7 +156,9 @@ class YSNetModel:
         return self.d_Nwi.copy_to_host()/M
     
     def follow(self,M,agent):
-
+        '''Make an epoch of M montecarlo steps returning the wealths of the agent in each step
+        M: number of montecarlo steps
+        agent: index of the agent'''
         Wi=np.zeros(M)
         Wi=Wi.astype(np.float32)
         d_Wi=cuda.device_array(M,dtype=np.float32)
@@ -135,5 +170,5 @@ class YSNetModel:
         return Wi
 
     def getGini():
-        #calculate gini coefficient
+        '''Return the Gini coefficient of the actual wealth distribution'''
         pass
