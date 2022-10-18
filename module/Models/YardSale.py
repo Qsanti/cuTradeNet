@@ -1,6 +1,6 @@
 import numpy as np
 from numba import cuda
-from .Kernels.kYS import gpu_MCS,gpu_MCSfollow,gpu_MCSplus
+from .Kernels.kYS import gpu_MCS,gpu_MCSfollow,gpu_MCSepoch
 from .Model import NetModel
 import warnings
 
@@ -118,7 +118,7 @@ class YSNetModel(NetModel):
         Nwi=Nwi.astype(np.float32)
         cuda.to_device(Nwi,to=self._NetModel__d_Nwi)
         warnings.simplefilter('ignore')
-        gpu_MCSplus[self._NetModel__blockspergrid,self._NetModel__threadsperblock](
+        gpu_MCSepoch[self._NetModel__blockspergrid,self._NetModel__threadsperblock](
         self._NetModel__d_Nwealths,self.__d_Nrisks,
         self._NetModel__d_SI,self._NetModel__d_SJ,
         self.__f,self._NetModel__wmin,

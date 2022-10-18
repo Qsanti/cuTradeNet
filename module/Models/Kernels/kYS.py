@@ -71,7 +71,7 @@ def gpu_MCS(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na):
 
         
 @cuda.jit
-def gpu_MCSplus(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na,Wis):
+def gpu_MCSepoch(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na,Wis):
     
     idx=cuda.threadIdx.x 
     bidx=cuda.blockIdx.x
