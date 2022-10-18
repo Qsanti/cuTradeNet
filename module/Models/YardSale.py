@@ -6,6 +6,8 @@ from time import time
 from .Utils import GraphManager as gm
 import igraph as ig
 from networkx import Graph as nxGraph
+import warnings
+
 
 class YSNetModel:
     '''Class for a Yard Sale model on complex networks.
@@ -69,22 +71,21 @@ class YSNetModel:
         self._rng_states = create_xoroshiro128p_states(self._threadsperblock*self._blockspergrid, seed=time())
         self.reset()
 
-
-    def reset(self,wealth_type='uniform',risk_type='hetereogeneus',r=0.1):
+    def reset(self,wealth_type='uniform',risk_type='hetereogeneous',r=0.1):
         '''
         Reset the model to random state in risks and wealths. 
         wealth_type: 'uniform' or 'equal'
-        risk_type:  'hetereogeneus' or 'homogeneus'
-        r: if risk_type is 'homogeneus' this is the risk for all agents
+        risk_type:  'hetereogeneous' or 'homogeneous'
+        r: if risk_type is 'homogeneous' this is the risk for all agents
         '''
 
-        if risk_type=='hetereogeneus':
+        if risk_type=='hetereogeneous':
             Nrisks=np.random.uniform(0,1,self._N)
-        elif risk_type=='homogeneus':
+        elif risk_type=='homogeneous':
             Nwealths=np.ones(self._N)
             Nrisks=np.ones(self._N)*r
         else:
-            raise Exception('''Unsupported risk type. Use 'hetereogeneus' or 'homogeneus'.''')
+            raise Exception('''Unsupported risk type. Use 'hetereogeneous' or 'homogeneous'.''')
 
         if wealth_type=='uniform':
             Nwealths=np.random.uniform(0,1,self._N)
@@ -152,8 +153,10 @@ class YSNetModel:
     def termalize(self,M):
         '''Termalize the model for M montecarlo steps
         M: number of montecarlo steps'''
+        warnings.simplefilter('ignore')
         gpu_MCS[self._blockspergrid,self._threadsperblock](self._d_Nwealths,self._d_Nrisks,self._d_SI,self._d_SJ,self._f,self._d_L1,self._d_L2,self._rng_states,M,self._Nnet,self._Na)
         cuda.synchronize()
+        warnings.simplefilter('default')
 
     def epoch(self,M):
         '''Make an epoch of M montecarlo steps returning the mean temporal wealths in each agent
@@ -161,9 +164,10 @@ class YSNetModel:
         Nwi=np.zeros(self._N)
         Nwi=Nwi.astype(np.float32)
         cuda.to_device(Nwi,to=self._d_Nwi)
-
+        warnings.simplefilter('ignore')
         gpu_MCSplus[self._blockspergrid,self._threadsperblock](self._d_Nwealths,self._d_Nrisks,self._d_SI,self._d_SJ,self._f,self._d_L1,self._d_L2,self._rng_states,M,self._Nnet,self._Na,self._d_Nwi)
-
+        cuda.synchronize()
+        warnings.simplefilter('default')
         return self._d_Nwi.copy_to_host()/M
     
     def follow(self,M,agent):
@@ -174,7 +178,10 @@ class YSNetModel:
         Wi=Wi.astype(np.float32)
         d_Wi=cuda.device_array(M,dtype=np.float32)
         cuda.to_device(Wi,to=d_Wi)
+        warnings.simplefilter('ignore')
         gpu_MCSfollow[self._blockspergrid,self._threadsperblock](self._d_Nwealths,self._d_Nrisks,self._d_SI,self._d_SJ,self._f,self._d_L1,self._d_L2,self._rng_states,M,self._Nnet,self._Na,d_Wi,agent)
+        cuda.synchronize()
+        warnings.simplefilter('default')
         d_Wi.copy_to_host(Wi)
         del d_Wi
 
