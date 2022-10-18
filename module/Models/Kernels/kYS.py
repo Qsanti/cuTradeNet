@@ -4,7 +4,7 @@ from numba.cuda.random import xoroshiro128p_uniform_float32
 
 
 @cuda.jit
-def gpu_MCS(Nw,Nr,SI,SJ,f,L1,L2,rng_states,M,N,Na):
+def gpu_MCS(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na):
     
     idx=cuda.threadIdx.x 
     bidx=cuda.blockIdx.x
@@ -42,7 +42,7 @@ def gpu_MCS(Nw,Nr,SI,SJ,f,L1,L2,rng_states,M,N,Na):
                 wj=Nw[j]
 
 
-                if wi>3e-14 and wj>3e-14:
+                if wi>wmin and wj>wmin:
 
                     if wi*Nr[i]<wj*Nr[j]:
                         dw=wi*Nr[i]
@@ -71,7 +71,7 @@ def gpu_MCS(Nw,Nr,SI,SJ,f,L1,L2,rng_states,M,N,Na):
 
         
 @cuda.jit
-def gpu_MCSplus(Nw,Nr,SI,SJ,f,L1,L2,rng_states,M,N,Na,Wis):
+def gpu_MCSplus(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na,Wis):
     
     idx=cuda.threadIdx.x 
     bidx=cuda.blockIdx.x
@@ -112,7 +112,7 @@ def gpu_MCSplus(Nw,Nr,SI,SJ,f,L1,L2,rng_states,M,N,Na,Wis):
                 wj=Nw[j]
 
 
-                if wi>3e-14 and wj>3e-14:
+                if wi>wmin and wj>wmin:
 
                     if wi*Nr[i]<wj*Nr[j]:
                         dw=wi*Nr[i]
@@ -144,7 +144,7 @@ def gpu_MCSplus(Nw,Nr,SI,SJ,f,L1,L2,rng_states,M,N,Na,Wis):
 
 
 @cuda.jit
-def gpu_MCSfollow(Nw,Nr,SI,SJ,f,L1,L2,rng_states,M,N,Na,Wis,agent):
+def gpu_MCSfollow(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na,Wis,agent):
     
     idx=cuda.threadIdx.x 
     bidx=cuda.blockIdx.x
@@ -182,7 +182,7 @@ def gpu_MCSfollow(Nw,Nr,SI,SJ,f,L1,L2,rng_states,M,N,Na,Wis,agent):
                 wj=Nw[j]
 
 
-                if wi>3e-14 and wj>3e-14:
+                if wi>wmin and wj>wmin:
 
                     if wi*Nr[i]<wj*Nr[j]:
                         dw=wi*Nr[i]
