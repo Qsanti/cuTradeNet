@@ -97,12 +97,20 @@ class NetModel:
         '''Set the wealths of the agents'''
         if len(W)!=self.__N:
             raise Exception('Wealths must be a list of length N')
+
+        if np.any(np.array(W)<0):
+            raise Exception('All wealths must be positive')
+        
         cuda.to_device(W.astype(np.float32),to=self.__d_Nwealths)
 
     def set_wealth_by_idx(self,A,w):
         '''Set the wealth of the agents indexed by A to w
         A: indexes of the agents Ex: [1,2,3]
         w: wealth to set or array of wealths Ex: 0.1 or [0.1,0.2,0.3]''' 
+        
+        if np.any(np.array(w)<0):
+            raise Exception('All wealths must be positive')
+
         Nwealths=self.__d_Nwealths.copy_to_host()
         Nwealths[A]=w
         Nwealths=Nwealths.astype(np.float32)
