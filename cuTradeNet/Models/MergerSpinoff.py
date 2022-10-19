@@ -1,167 +1,117 @@
 import numpy as np
 from numba import cuda
-from numba.cuda.random import create_xoroshiro128p_states
-from .Kernels.kMS import gpu_MCS,gpu_MCSfollow,gpu_MCSplus
-from time import time
-from .Utils import GraphManager as gm
-import igraph as ig
-from networkx import Graph as nxGraph
-
-class MSNetModel:
-    def __init__(self,G):
-        '''Create a new Merger-Spinoff model with the given graph or list of graphs
-        G: igraph/ntworkx graph or list of igraph/networkx graphs'''
-
-        if type(G)==list:
-            if type(G[0])==nxGraph:
-                G=[ig.Graph.from_networkx(g) for g in G]
-            Na,Nnet,L1,L2=gm.getBigGraph(G)
+from .Kernels.kMS import gpu_MCS,gpu_MCSfollow,gpu_MCSepoch
+from .Model import NetModel
+import warnings
 
 
-        elif type(G)==ig.Graph:
-            L1,L2=gm.toLL(G)
-            Nnet=L2.size-1
-            Na=1
+class MSNetModel(NetModel):
+    '''Class for a Merger Spinoff model on complex networks.
+    Runs transactions in GPU using numba, multiple graphs can be used running in parallel.
+    '''
+    
+    def __init__(self,G,wmin=1e-17):
+        '''Create a new  Merger Spinoff model with the given graph or list of graphs 
+        G: igraph/ntworkx graph or list of igraph/networkx graphs
+        wmin: minimum wealth an agent has to have to be able to transact'''
 
-        #if its networkx graph convert to igraph
-        elif type(G)==nxGraph:
-            G=ig.Graph.from_networkx(G)
-            L1,L2=gm.toLL(G)
-            Nnet=L2.size-1
-            Na=1
 
-        else:
-            raise Exception('Unknown graph type. Use igraph or networkx graph.')
+        #Create the base network model of wealths 
+        super().__init__(G,wmin)
 
-        if Nnet>1024:
-            raise Exception('Graphs cannot be bigger than 1024 nodes for gpu compatibility')
-            
-        self.Nnet=Nnet
-        self.Na=Na
-        self.tL1=L1
-        self.tL2=L2
-        self.N=L2.size-1
-        self.f=0
-        self.threadsperblock=1024
-        self.blockspergrid=self.Na
+        #Allocated GPU memory for risks
+        self.__d_Nrisks=cuda.device_array(self._NetModel__N,dtype=np.float32)
 
-        #Alocamos memoria en la GPU para riquezas, riesgos, listas, y semaforos i y j
-        self.d_Nwealths=cuda.device_array(self.N,dtype=np.float32)
-        self.d_Nwi=cuda.device_array(self.N,dtype=np.float32)
-        self.d_Nrisks=cuda.device_array(self.N,dtype=np.float32)
-        self.d_L1=cuda.device_array(self.tL1.size,dtype=np.int32)
-        self.d_L2=cuda.device_array(self.tL2.size,dtype=np.int32)
-        self.d_SI=cuda.device_array(self.N,dtype=np.int32)
-        self.d_SJ=cuda.device_array(self.N,dtype=np.int32)
-
-        #semaforos en estado inicial
-        SI=np.ones(self.N,dtype=np.int32)
-        cuda.to_device(SI,to=self.d_SI)
-        SJ=np.ones(self.N,dtype=np.int32)
-        cuda.to_device(SJ,to=self.d_SJ)
-
-        #Alocamos estado para números aleatoprios
-        self.rng_states = create_xoroshiro128p_states(self.threadsperblock*self.blockspergrid, seed=time())
+        #Set default state for the model
         self.reset()
 
+    def __str__(self) -> str:
+        return f'Merger Spinoff model: \nGraph: {self._NetModel__Na} graphs of {self._NetModel__Nnet} agents \nMinimum wealth to transact: {self._NetModel__wmin}'
+      
 
-    def reset(self,wealth_type='uniform',risk_type='hetereogeneus',r=0.1):
-        '''
-        Reset the model to random state in risks and wealths. 
-        wealth_type: 'uniform' or 'equal'
-        risk_type:  'hetereogeneus' or 'homogeneus'
-        r: if risk_type is 'homogeneus' this is the risk for all agents
-        '''
-
-        if risk_type=='hetereogeneus':
-            Nrisks=np.random.uniform(0,1,self.N)
-        elif risk_type=='homogeneus':
-            Nwealths=np.ones(self.N)
-            Nrisks=np.ones(self.N)*r
-        else:
-            raise Exception('''Unsupported risk type. Use 'hetereogeneus' or 'homogeneus'.''')
-
-        if wealth_type=='uniform':
-            Nwealths=np.random.uniform(0,1,self.N)
-        elif wealth_type=='equal':
-            Nwealths=np.ones(self.N)
-        else:
-            raise Exception('''Unsupported wealth type. Use 'uniform' or 'equal'.''')
-
-        Nwealths=Nwealths/np.sum(Nwealths)
-
-        for l in range(self.Na):
-            Nwealths[l*self.Nnet:(l+1)*self.Nnet]=Nwealths[l*self.Nnet:(l+1)*self.Nnet]/np.sum(Nwealths[l*self.Nnet:(l+1)*self.Nnet])
-        Nwealths=Nwealths.astype(np.float32)
-        cuda.to_device(Nwealths,to=self.d_Nwealths)
-        Nrisks=Nrisks.astype(np.float32)    
-        cuda.to_device(Nrisks,to=self.d_Nrisks)
-
-        #Disponemos los vecinos en la GPU (son fijas para todos los f)
-        cuda.to_device(self.tL1.astype(np.int32),to=self.d_L1)
-        cuda.to_device(self.tL2.astype(np.int32),to=self.d_L2)
-
-    def getWealths(self):
-        '''Return the wealths of the agents'''
-        return self.d_Nwealths.copy_to_host()
-
-    def getRisks(self):
+    @property
+    def risks(self):
         '''Return the risks of the agents'''
-        return self.d_Nrisks.copy_to_host()
+        return self.__d_Nrisks.copy_to_host()
 
-    def setRisks(self,R):
+    @risks.setter
+    def risks(self,R):
         '''Set the risks of the agents
         R: array of risks in the same order as the agents'''
-        cuda.to_device(R.astype(np.float32),to=self.d_Nrisks)
+        if len(R)!=self._N:
+            raise Exception(f'Number of risks must be equal to the number of agents ({self._NetModel__N})')
 
-    def setWealths(self,W):
-        '''Set the wealths of the agents
-        W: array of wealths in the same order as the agents'''
-        cuda.to_device(W.astype(np.float32),to=self.d_Nwealths)
+        if np.any(R>1) or np.any(R<0):
+            raise Exception('All risks must be between 0 and 1')
 
-    def setRisk(self,A,r):
+        cuda.to_device(R.astype(np.float32),to=self.__d_Nrisks)
+
+    def set_risk_by_idx(self,A,r):
         '''Set the risk of the agents indexed by A to r
         A: indexes of the agents Ex: [1,2,3]
         r: risk to set or array of risks Ex: 0.1 or [0.1,0.2,0.3]''' 
-        R=self.getRisks()
-        R[A]=r
-        self.setRisks(R)
-        Nrisks=self.d_Nrisks.copy_to_host()
+
+        if np.any(r>1) or np.any(r<0):
+            raise Exception('All risks must be between 0 and 1')
+
+      
+        Nrisks=self.__d_Nrisks.copy_to_host()
         Nrisks[A]=r
         Nrisks=Nrisks.astype(np.float32)
-        cuda.to_device(Nrisks,to=self.d_Nrisks)
+        cuda.to_device(Nrisks,to=self.__d_Nrisks)
 
-    def setWealth(self,A,w):
-        '''Set the wealth of the agents indexed by A to w
-        A: indexes of the agents Ex: [1,2,3]
-        w: wealth to set or array of wealths Ex: 0.1 or [0.1,0.2,0.3]''' 
-        Nwealths=self.d_Nwealths.copy_to_host()
-        Nwealths[A]=w
-        Nwealths=Nwealths.astype(np.float32)
-        cuda.to_device(Nwealths,to=self.d_Nwealths)
 
-    def modifyGraph(self,G):
-        '''Modify the graph of the model'''
-        pass
-      
-    def termalize(self,M):
+    def reset(self,wealth_type='uniform',risk_type='hetereogeneous',r=0.1):
+        '''
+        Reset the model to random state in risks and wealths. 
+        wealth_type: 'uniform' or 'equal'
+        risk_type:  'hetereogeneous' or 'homogeneous'
+        r: if risk_type is 'homogeneous' this is the risk for all agents
+        '''
+        super().reset(wealth_type)
+
+        if risk_type=='hetereogeneous':
+            Nrisks=np.random.uniform(0,1,self._N)
+        elif risk_type=='homogeneous':
+            Nwealths=np.ones(self._N)
+            Nrisks=np.ones(self._N)*r
+        else:
+            raise Exception('''Unsupported risk type. Use 'hetereogeneous' or 'homogeneous'.''')
+
+        Nrisks=Nrisks.astype(np.float32)    
+        cuda.to_device(Nrisks,to=self.__d_Nrisks)
+        
+
+    def termalize(self,M : int):
         '''Termalize the model for M montecarlo steps
         M: number of montecarlo steps'''
-        gpu_MCS[self.blockspergrid,self.threadsperblock](self.d_Nwealths,self.d_Nrisks,self.d_SI,self.d_SJ,self.f,self.d_L1,self.d_L2,self.rng_states,M,self.Nnet,self.Na)
+        warnings.simplefilter('ignore')
+        gpu_MCS[self._NetModel__blockspergrid,self._NetModel__threadsperblock](
+        self._NetModel__d_Nwealths,self.__d_Nrisks,
+        self._NetModel__d_SI,self._NetModel__d_SJ,
+        self._NetModel__wmin,self._NetModel__d_L1,
+        self._NetModel__d_L2,self._NetModel__rng_states,M,
+        self._NetModel__Nnet,self._NetModel__Na)
         cuda.synchronize()
+        warnings.simplefilter('default')
 
-    def epoch(self,M):
+    def epoch(self,M : int):
         '''Make an epoch of M montecarlo steps returning the mean temporal wealths in each agent
         M: number of montecarlo steps'''
-        Nwi=np.zeros(self.N)
+        Nwi=np.zeros(self._NetModel__N)
         Nwi=Nwi.astype(np.float32)
-        cuda.to_device(Nwi,to=self.d_Nwi)
-
-        gpu_MCSplus[self.blockspergrid,self.threadsperblock](self.d_Nwealths,self.d_Nrisks,self.d_SI,self.d_SJ,self.f,self.d_L1,self.d_L2,self.rng_states,M,self.Nnet,self.Na,self.d_Nwi)
-
-        return self.d_Nwi.copy_to_host()/M
+        cuda.to_device(Nwi,to=self._NetModel__d_Nwi)
+        warnings.simplefilter('ignore')
+        gpu_MCSepoch[self._NetModel__blockspergrid,self._NetModel__threadsperblock](
+        self._NetModel__d_Nwealths,self.__d_Nrisks,
+        self._NetModel__d_SI,self._NetModel__d_SJ,self._NetModel__wmin,
+        self._NetModel__d_L1,self._NetModel__d_L2,
+        self._NetModel__rng_states,M,self._NetModel__Nnet,self._NetModel__Na,self._NetModel__d_Nwi)
+        cuda.synchronize()
+        warnings.simplefilter('default')
+        return self._NetModel__d_Nwi.copy_to_host()/M
     
-    def follow(self,M,agent):
+    def follow(self,M : int ,agent : int):
         '''Make an epoch of M montecarlo steps returning the wealths of the agent in each step
         M: number of montecarlo steps
         agent: index of the agent'''
@@ -169,22 +119,13 @@ class MSNetModel:
         Wi=Wi.astype(np.float32)
         d_Wi=cuda.device_array(M,dtype=np.float32)
         cuda.to_device(Wi,to=d_Wi)
-        gpu_MCSfollow[self.blockspergrid,self.threadsperblock](self.d_Nwealths,self.d_Nrisks,self.d_SI,self.d_SJ,self.f,self.d_L1,self.d_L2,self.rng_states,M,self.Nnet,self.Na,d_Wi,agent)
+        warnings.simplefilter('ignore')
+        gpu_MCSfollow[self._NetModel__blockspergrid,self._NetModel__threadsperblock](self._NetModel__d_Nwealths,self.__d_Nrisks,self._NetModel__d_SI,self._NetModel__d_SJ,self._NetModel__wmin,self._NetModel__d_L1,self._NetModel__d_L2,self._NetModel__rng_states,M,self._NetModel__Nnet,self._NetModel__Na,d_Wi,agent)
+        cuda.synchronize()
+        warnings.simplefilter('default')
         d_Wi.copy_to_host(Wi)
         del d_Wi
 
         return Wi
 
-    def getGini(self):
-        '''Return the Gini coefficient of the actual wealth distribution'''
-        x=self.d_Nwealths.copy_to_host()
-        #divide x in self.Na parts
-        x=x.reshape(self.Na,self.Nnet)
-
-        #sort each part
-        sorted_x = np.sort(x,axis=1)
-        #calculate the cumulative sum of each part
-        cumx = np.cumsum(sorted_x, dtype=np.float32, axis=1)
-
-
-        return (self.Nnet + 1 - 2 * np.sum(cumx,axis=1) / cumx[:,-1]) / self.Nnet
+   
