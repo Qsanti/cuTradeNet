@@ -6,6 +6,6 @@ Leads the user to set one (or ensemble) of *complex networks* as a contact struc
 * [Yard-sale model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
 * [Merger-Spinoff model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
 
-It is written in Python and uses Cuda module from [Numba](https://numba.pydata.org/ "Numba page") package to accelerate the simulation runnin in GPU, *paralelizing some transaccions* in the same graph and *paralelizing runs* in multiple graphs leading faster outcome estimations.
+It is written in Python and uses Cuda module from [Numba](https://numba.pydata.org/ "Numba page") package to accelerate the simulation runnin in GPU, *paralelizing some transaccions* in the same graph and *paralelizing runs* in multiple graphs, leading to  easier & faster averaging of system properties.
 It's completely abstracted from the CUDA knowledge for the user, so you can use it as a regular Python library.
 
