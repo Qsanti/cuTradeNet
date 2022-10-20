@@ -2,7 +2,7 @@
 
 **cuTradeNet** is a library that provides classes to easily create & run *kinetic wealth exchange models* on *complex networks*. 
 
-Leads the user to set one (or ensemble) of *complex networks* as a contact structure agents use to trade about. Using the following wealth exchange models:
+Leads the user to set one (or ensemble) of *complex networks* as a contact structure agents use to trade about. The following wealth exchange models were implemented:
 * [Yard-sale model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
 * [Merger-Spinoff model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
 
