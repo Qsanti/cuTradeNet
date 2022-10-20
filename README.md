@@ -9,3 +9,6 @@ Leads the user to set one (or ensemble) of *complex networks* as a contact struc
 It is written in Python and uses Cuda module from [Numba](https://numba.pydata.org/ "Numba page") package to accelerate the simulation runnin in GPU, *paralelizing some transaccions* in the same graph and *paralelizing runs* in multiple graphs, leading to  easier & faster averaging of system properties.
 It's completely abstracted from the CUDA knowledge for the user, so you can use it as a regular Python library.
 
+### How to use
+There is a [Demo notebook](https://github.com/Qsanti/cuTradeNet/Models&Demo) in the repository that can also be tryed in it's [Google Colab]() version.
+There is also a Gereneral explanation of Kinetic Wealth Exchange Models in [this notebook](https://github.com/Qsanti/cuTradeNet/Models&Demo/ModelsList).
