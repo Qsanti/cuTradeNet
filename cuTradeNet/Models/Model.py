@@ -3,6 +3,7 @@ from numba import cuda
 from numba.cuda.random import create_xoroshiro128p_states
 from time import time 
 from . Utils import GraphManager as gm
+from . Utils import ExeptionsManager as EM
 import igraph as ig
 from networkx import Graph as nxGraph
 
@@ -16,8 +17,7 @@ class NetModel:
         wmin: minimum wealth an agent has to have to be able to transact'''
 
 
-        if wmin<0:
-            raise Exception('Minimum wealth to transact must be positive')
+        EM.check_wmin(wmin)
 
         if type(G)==list:
             if type(G[0])==nxGraph:
@@ -83,8 +83,7 @@ class NetModel:
     @wmin.setter
     def wmin(self,wmin):
         '''Set the minimum wealth to transact'''
-        if wmin<0:
-            raise Exception('Minimum wealth to transact must be positive')
+        EM.check_wmin(wmin)
         self.__wmin=wmin
 
     @property
@@ -98,8 +97,7 @@ class NetModel:
         if len(W)!=self.__N:
             raise Exception('Wealths must be a list of length N')
 
-        if np.any(np.array(W)<0):
-            raise Exception('All wealths must be positive')
+        EM.check_wealths(W)
         
         cuda.to_device(W.astype(np.float32),to=self.__d_Nwealths)
 
@@ -108,8 +106,7 @@ class NetModel:
         A: indexes of the agents Ex: [1,2,3]
         w: wealth to set or array of wealths Ex: 0.1 or [0.1,0.2,0.3]''' 
         
-        if np.any(np.array(w)<0):
-            raise Exception('All wealths must be positive')
+        EM.check_wealths(w)
 
         Nwealths=self.__d_Nwealths.copy_to_host()
         Nwealths[A]=w

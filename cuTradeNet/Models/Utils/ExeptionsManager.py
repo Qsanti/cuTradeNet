@@ -18,6 +18,7 @@ def check_wmin(wmin : float):
 
 def check_risks(risks):
     '''Check if the risks are valid'''
-    if np.any(R>1) or np.any(R<0):
+    risks=np.asarray(risks)
+    if np.any(risks>1) or np.any(risks<0):
         raise Exception('All risks must be between 0 and 1')
         

@@ -2,6 +2,7 @@ import numpy as np
 from numba import cuda
 from .Kernels.kYS import gpu_MCS,gpu_MCSfollow,gpu_MCSepoch
 from .Model import NetModel
+from .Utils import ExceptionsManager as EM
 import warnings
 
 
@@ -57,8 +58,7 @@ class YSNetModel(NetModel):
         if len(R)!=self._N:
             raise Exception(f'Number of risks must be equal to the number of agents ({self._NetModel__N})')
 
-        if np.any(R>1) or np.any(R<0):
-            raise Exception('All risks must be between 0 and 1')
+        EM.check_risks(R)
 
         cuda.to_device(R.astype(np.float32),to=self.__d_Nrisks)
 
@@ -67,10 +67,8 @@ class YSNetModel(NetModel):
         A: indexes of the agents Ex: [1,2,3]
         r: risk to set or array of risks Ex: 0.1 or [0.1,0.2,0.3]''' 
 
-        if np.any(r>1) or np.any(r<0):
-            raise Exception('All risks must be between 0 and 1')
+        EM.check_risks(r)
 
-      
         Nrisks=self.__d_Nrisks.copy_to_host()
         Nrisks[A]=r
         Nrisks=Nrisks.astype(np.float32)
@@ -101,6 +99,8 @@ class YSNetModel(NetModel):
     def termalize(self,M : int):
         '''Termalize the model for M montecarlo steps
         M: number of montecarlo steps'''
+
+        EM.check_MCS(M)
         warnings.simplefilter('ignore')
         gpu_MCS[self._NetModel__blockspergrid,self._NetModel__threadsperblock](
         self._NetModel__d_Nwealths,self.__d_Nrisks,
@@ -114,6 +114,8 @@ class YSNetModel(NetModel):
     def epoch(self,M : int):
         '''Make an epoch of M montecarlo steps returning the mean temporal wealths in each agent
         M: number of montecarlo steps'''
+
+        EM.check_MCS(M)
         Nwi=np.zeros(self._NetModel__N)
         Nwi=Nwi.astype(np.float32)
         cuda.to_device(Nwi,to=self._NetModel__d_Nwi)
@@ -132,6 +134,8 @@ class YSNetModel(NetModel):
         '''Make an epoch of M montecarlo steps returning the wealths of the agent in each step
         M: number of montecarlo steps
         agent: index of the agent'''
+
+        EM.check_MCS(M)
         Wi=np.zeros(M)
         Wi=Wi.astype(np.float32)
         d_Wi=cuda.device_array(M,dtype=np.float32)
