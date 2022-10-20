@@ -4,7 +4,7 @@ from numba.cuda.random import xoroshiro128p_uniform_float32
 #Kernels for the Monte Carlo Simulation Yard Sale
 
 @cuda.jit
-def gpu_MCS(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na):
+def gpu_MCS(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
@@ -64,7 +64,7 @@ def gpu_MCS(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na):
 
         
 @cuda.jit
-def gpu_MCSepoch(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na,Wis):
+def gpu_MCSepoch(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
@@ -128,7 +128,7 @@ def gpu_MCSepoch(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na,Wis):
 
 
 @cuda.jit
-def gpu_MCSfollow(Nw,Nr,SI,SJ,f,wmin,L1,L2,rng_states,M,N,Na,Wis,agent):
+def gpu_MCSfollow(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis,agent):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
