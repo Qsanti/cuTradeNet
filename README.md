@@ -11,7 +11,7 @@ It's completely abstracted from the CUDA knowledge for the user, so you can use 
 
 ### How to use
 There is a [Demo notebook](https://github.com/Qsanti/cuTradeNet/blob/master/Models%26Demo/Demo.ipynb) in the repository that can be tryed in it's [Google Colab](https://colab.research.google.com/github/Qsanti/cuTradeNet/blob/master/Models%26Demo/Demo.ipynb) version too.
-There is also a [Gereneral explanation](https://github.com/Qsanti/cuTradeNet/blob/master/Models%26Demo/ModelsList.ipynb) of Kinetic Wealth Exchange Models used.
+There is also a [General explanation](https://github.com/Qsanti/cuTradeNet/blob/master/Models%26Demo/ModelsList.ipynb) of Kinetic Wealth Exchange Models used.
 
 ### How to install
 You can install it from [PyPi](https://pypi.org/project/cuTradeNet/ "cuTradeNet page in PyPi") with the following command:
@@ -20,4 +20,4 @@ pip install cuTradeNet
 ```
 
 ### Repository&Questions
-The repository is in [GitHub](https://github.com/Qsanti/), and you can ask questions or contact us in the [Discussions](https://github.com/Qsanti/cuTradeNet/discussions/ "cuTradeNet discussions") section. 
+The repository is in [GitHub](https://github.com/Qsanti/cuTradeNet/), and you can ask questions or contact us in the [Discussions](https://github.com/Qsanti/cuTradeNet/discussions/ "cuTradeNet discussions") section. 
