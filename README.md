@@ -10,5 +10,5 @@ It is written in Python and uses Cuda module from [Numba](https://numba.pydata.o
 It's completely abstracted from the CUDA knowledge for the user, so you can use it as a regular Python library.
 
 ### How to use
-There is a [Demo notebook](https://github.com/Qsanti/cuTradeNet/Models&Demo) in the repository that can also be tryed in it's [Google Colab]() version.
+There is a [Demo notebook](https://github.com/Qsanti/cuTradeNet/Models&Demo) in the repository that can be tryed in it's [Google Colab]() version too.
 There is also a Gereneral explanation of Kinetic Wealth Exchange Models in [this notebook](https://github.com/Qsanti/cuTradeNet/Models&Demo/ModelsList).
