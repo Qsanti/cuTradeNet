@@ -21,4 +21,4 @@ pip install cuTradeNet
 ```
 
 ### Repository&Questions
-The repository is in [GitHub](https://github.com/Qsanti/), and you can ask questions in the [Issues](https://github.com/Qsanti/cuTradeNet/issues)
+The repository is in [GitHub](https://github.com/Qsanti/), and you can ask questions or contact us in the [Discussions](https://github.com/Qsanti/cuTradeNet/discussions/ "cuTradeNet discussions") section. 
