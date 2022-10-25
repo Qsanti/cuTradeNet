@@ -23,3 +23,7 @@ pip install cuTradeNet
 
 ### Repository&Questions
 The repository is in [GitHub](https://github.com/Qsanti/cuTradeNet/), and you can ask questions or contact us in the [Discussions](https://github.com/Qsanti/cuTradeNet/discussions/ "cuTradeNet discussions") section. 
+
+
+#### CUDA dependencies
+In order to use this library in your personal computer you should have a [CUDA capable gpu](https://developer.nvidia.com/cuda-gpus) and download the [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) for your OS. If you don't fulfill this requirementes you can always use it in [the cloud](https://colab.research.google.com/github/Qsanti/cuTradeNet/blob/master/Models%26Demo/Demo.ipynb). Don't hesitate to [contact us](https://github.com/Qsanti/cuTradeNet/discussions/ "cuTradeNet discussions") to get help!
