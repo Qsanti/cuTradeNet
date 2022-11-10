@@ -1,7 +1,7 @@
 from numba import cuda
 from numba.cuda.random import xoroshiro128p_uniform_float32
 
-#Kernels for the Monte Carlo Simulation Yard Sale
+#Kernels for the Monte Carlo Simulation Merger-Spinoff
 
 @cuda.jit
 def gpu_MCS(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na):
