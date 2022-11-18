@@ -1,10 +1,10 @@
 from numba import cuda
 from numba.cuda.random import xoroshiro128p_uniform_float32
 
-#Kernels for the Monte Carlo Simulation Constant
+#Kernels for the Monte Carlo Simulation Drăgulescu and Yakovenko
 
 @cuda.jit
-def gpu_MCS(Nw,SI,SJ,w,L1,L2,rng_states,M,N,Na):
+def gpu_MCS(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
@@ -41,22 +41,19 @@ def gpu_MCS(Nw,SI,SJ,w,L1,L2,rng_states,M,N,Na):
                 wi=Nw[i] 
                 wj=Nw[j]
 
-                if wi>w and wj>w: #check if wealths are above the minimum
+                if wi>wmin and wj>wmin: #check if wealths are above the minimum
 
-                    #START Constant exchange
+                    #START Drăgulescu and Yakovenko exchange
 
-                    #choosse winner
-                    n=bool(int(xoroshiro128p_uniform_float32(rng_states, i)))
+                    #choose epsilon
+                    e=xoroshiro128p_uniform_float32(rng_states, i)
+                    dw=e*wi+(1-e)*wj
                     
                     #perform exchange
-                    if n:
-                        Nw[i]=Nw[i]+w
-                        Nw[j]=Nw[j]-w
-                    else:
-                        Nw[i]=Nw[i]-w
-                        Nw[j]=Nw[j]+w
+                    Nw[i]=Nw[i]-dw
+                    Nw[j]=Nw[j]+dw
 
-                    #END Constant exchange
+                    #END Drăgulescu and Yakovenko exchange
                 
                 SI[i]=0 #free
                 cuda.syncthreads() #wait for all threads to load their status
@@ -64,7 +61,7 @@ def gpu_MCS(Nw,SI,SJ,w,L1,L2,rng_states,M,N,Na):
 
         
 @cuda.jit
-def gpu_MCSepoch(Nw,SI,SJ,w,L1,L2,rng_states,M,N,Na,Wis):
+def gpu_MCSepoch(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
@@ -102,22 +99,19 @@ def gpu_MCSepoch(Nw,SI,SJ,w,L1,L2,rng_states,M,N,Na,Wis):
                 wi=Nw[i] 
                 wj=Nw[j]
 
-                if wi>w and wj>w: #check if wealths are above the minimum
+                if wi>wmin and wj>wmin: #check if wealths are above the minimum
 
-                    #START Constant exchange
+                    #START Drăgulescu and Yakovenko exchange
 
-                    #choosse winner
-                    n=bool(int(xoroshiro128p_uniform_float32(rng_states, i)))
+                    #choose epsilon
+                    e=xoroshiro128p_uniform_float32(rng_states, i)
+                    dw=e*wi+(1-e)*wj
                     
                     #perform exchange
-                    if n:
-                        Nw[i]=Nw[i]+w
-                        Nw[j]=Nw[j]-w
-                    else:
-                        Nw[i]=Nw[i]-w
-                        Nw[j]=Nw[j]+w
+                    Nw[i]=Nw[i]-dw
+                    Nw[j]=Nw[j]+dw
 
-                    #END Constant exchange
+                    #END Drăgulescu and Yakovenko exchange
                 
                 SI[i]=0 #free
                 cuda.syncthreads() #wait for all threads to load their status
@@ -128,7 +122,7 @@ def gpu_MCSepoch(Nw,SI,SJ,w,L1,L2,rng_states,M,N,Na,Wis):
 
 
 @cuda.jit
-def gpu_MCSfollow(Nw,SI,SJ,w,L1,L2,rng_states,M,N,Na,Wis,agent):
+def gpu_MCSfollow(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis,agent):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
@@ -165,22 +159,19 @@ def gpu_MCSfollow(Nw,SI,SJ,w,L1,L2,rng_states,M,N,Na,Wis,agent):
                 wi=Nw[i] 
                 wj=Nw[j]
 
-                if wi>w and wj>w: #check if wealths are above the minimum
+                if wi>wmin and wj>wmin: #check if wealths are above the minimum
 
-                    #START Constant exchange
+                    #START Drăgulescu and Yakovenko exchange
 
-                    #choosse winner
-                    n=bool(int(xoroshiro128p_uniform_float32(rng_states, i)))
+                    #choose epsilon
+                    e=xoroshiro128p_uniform_float32(rng_states, i)
+                    dw=e*wi+(1-e)*wj
                     
                     #perform exchange
-                    if n:
-                        Nw[i]=Nw[i]+w
-                        Nw[j]=Nw[j]-w
-                    else:
-                        Nw[i]=Nw[i]-w
-                        Nw[j]=Nw[j]+w
+                    Nw[i]=Nw[i]-dw
+                    Nw[j]=Nw[j]+dw
 
-                    #END Constant exchange
+                    #END Drăgulescu and Yakovenko exchange
                 
                 SI[i]=0 #free
                 cuda.syncthreads() #wait for all threads to load their status

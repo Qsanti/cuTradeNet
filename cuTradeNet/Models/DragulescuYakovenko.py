@@ -1,6 +1,6 @@
 import numpy as np
 from numba import cuda
-from .Kernels.kC import gpu_MCS,gpu_MCSfollow,gpu_MCSepoch
+from .Kernels.kDY import gpu_MCS,gpu_MCSfollow,gpu_MCSepoch
 from .Model import NetModel
 from . Utils import ExceptionsManager as EM
 import warnings
