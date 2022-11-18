@@ -41,6 +41,7 @@ class CNetModel(NetModel):
         self.__w=w
 
 
+
     def reset(self,wealth_type='uniform'):
         '''
         Reset the model to random state in risks and wealths. 
@@ -97,7 +98,7 @@ class CNetModel(NetModel):
         gpu_MCSfollow[self._NetModel__blockspergrid,self._NetModel__threadsperblock](
         self._NetModel__d_Nwealths,
         self._NetModel__d_SI,self._NetModel__d_SJ,
-        self.__f,
+        self.__w,
         self._NetModel__d_L1,self._NetModel__d_L2,
         self._NetModel__rng_states,M,self._NetModel__Nnet,self._NetModel__Na,d_Wi,agent)
         cuda.synchronize()
