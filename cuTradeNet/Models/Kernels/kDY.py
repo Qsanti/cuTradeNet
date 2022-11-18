@@ -47,13 +47,13 @@ def gpu_MCS(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na):
 
                     #choose epsilon
                     e=xoroshiro128p_uniform_float32(rng_states, i)
-                    dw=e*wi+(1-e)*wj
                     
                     #perform exchange
-                    Nw[i]=Nw[i]-dw
-                    Nw[j]=Nw[j]+dw
+                    Nw[i]=e*(wi+wj)
+                    Nw[j]=(1-e)*(wi+wj)
 
                     #END Drăgulescu and Yakovenko exchange
+                
                 
                 SI[i]=0 #free
                 cuda.syncthreads() #wait for all threads to load their status
@@ -105,11 +105,10 @@ def gpu_MCSepoch(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis):
 
                     #choose epsilon
                     e=xoroshiro128p_uniform_float32(rng_states, i)
-                    dw=e*wi+(1-e)*wj
                     
                     #perform exchange
-                    Nw[i]=Nw[i]-dw
-                    Nw[j]=Nw[j]+dw
+                    Nw[i]=e*(wi+wj)
+                    Nw[j]=(1-e)*(wi+wj)
 
                     #END Drăgulescu and Yakovenko exchange
                 
@@ -165,11 +164,10 @@ def gpu_MCSfollow(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis,agent):
 
                     #choose epsilon
                     e=xoroshiro128p_uniform_float32(rng_states, i)
-                    dw=e*wi+(1-e)*wj
                     
                     #perform exchange
-                    Nw[i]=Nw[i]-dw
-                    Nw[j]=Nw[j]+dw
+                    Nw[i]=e*(wi+wj)
+                    Nw[j]=(1-e)*(wi+wj)
 
                     #END Drăgulescu and Yakovenko exchange
                 
