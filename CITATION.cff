@@ -1,0 +1,31 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: cuTradeNet
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - family-names: Cuevas
+    email: san.cuevas@protonmail.com
+    name-particle: Santiago
+    affiliation: Instituto Balseiro
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7336541
+    description: Cite the last avaliable version using this DOI
+abstract: >-
+  cuTradeNet is a library that provides classes to
+  easily create & run kinetic wealth exchange models
+  on complex networks.
+keywords:
+  - economics-models
+  - econophysics
+  - wealth-distribution
+  - 'gpu-simulation '
+  - complex-networks
+license: MIT
+version: 0.1.0
+date-released: '2022-11-30'
