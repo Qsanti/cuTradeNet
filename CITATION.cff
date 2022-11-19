@@ -27,6 +27,7 @@ keywords:
   - 'gpu-simulation '
   - complex-networks
 license: MIT
+doi: 10.5281/zenodo.7336541
 repository-code: "https://github.com/Qsanti/cuTradeNet"
 version: 0.1.0
 date-released: '2022-11-30'
