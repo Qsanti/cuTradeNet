@@ -9,13 +9,13 @@ message: >-
 type: software
 authors:
   - family-names: Cuevas
+    given-names: Santiago
     email: san.cuevas@protonmail.com
-    name-particle: Santiago
     affiliation: Instituto Balseiro
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7336541
-    description: Cite the last avaliable version using this DOI
+    description: "Module for GPU-Accelerated Kinetic Wealth Exchange Models on Complex Networks"
 abstract: >-
   cuTradeNet is a library that provides classes to
   easily create & run kinetic wealth exchange models
