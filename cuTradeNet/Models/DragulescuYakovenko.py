@@ -12,7 +12,7 @@ class DYNetModel(NetModel):
     '''
     
     def __init__(self,G,wmin=1e-17):
-        '''Create a new Constant trade model with the given graph or list of graphs and f value
+        '''Create a newDrăgulescu and Yakovenko model with the given graph or list of graphs and f value
         G: igraph/ntworkx graph or list of igraph/networkx graphs
         wmin: minimum wealth an agent has to have to be able to transact'''
         
