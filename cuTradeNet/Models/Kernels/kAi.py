@@ -1,10 +1,10 @@
 from numba import cuda
 from numba.cuda.random import xoroshiro128p_uniform_float32
 
-#Kernels for the Monte Carlo Simulation Merger-Spinoff
+#Kernels for the Monte Carlo Simulation All in 
 
 @cuda.jit
-def gpu_MCS(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na):
+def gpu_MCS(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
@@ -43,20 +43,26 @@ def gpu_MCS(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na):
 
                 if wi>wmin and wj>wmin: #check if wealths are above the minimum
 
-                    #START Merger-Spinoff exchange
+                    #START All in trade
 
-                    #choosse winner
+                    if wi<wj:
+                        dw=wi
+                    else:
+                        dw=wj
+
+                    #choose epsilon
                     n=bool(int(xoroshiro128p_uniform_float32(rng_states, i)+0.5))
                     
                     #perform exchange
                     if n:
-                        Nw[i]=Nw[i]+wj*Nr[j]
-                        Nw[j]=Nw[j]-wj*Nr[j]
+                        Nw[i]=Nw[i]+dw
+                        Nw[j]=Nw[j]-dw
                     else:
-                        Nw[i]=Nw[i]-wi*Nr[i]
-                        Nw[j]=Nw[j]+wi*Nr[i]
+                        Nw[i]=Nw[i]-dw
+                        Nw[j]=Nw[j]+dw
 
-                    #END Merger-Spinoff exchange
+                    #END All in trade
+                
                 
                 SI[i]=0 #free
                 cuda.syncthreads() #wait for all threads to load their status
@@ -64,7 +70,7 @@ def gpu_MCS(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na):
 
         
 @cuda.jit
-def gpu_MCSepoch(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis):
+def gpu_MCSepoch(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
@@ -104,20 +110,25 @@ def gpu_MCSepoch(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis):
 
                 if wi>wmin and wj>wmin: #check if wealths are above the minimum
 
-                    #START Merger-Spinoff exchange
+                    #START All in trade
 
-                    #choosse winner
+                    if wi<wj:
+                        dw=wi
+                    else:
+                        dw=wj
+
+                    #choose epsilon
                     n=bool(int(xoroshiro128p_uniform_float32(rng_states, i)+0.5))
                     
                     #perform exchange
                     if n:
-                        Nw[i]=Nw[i]+wj*Nr[j]
-                        Nw[j]=Nw[j]-wj*Nr[j]
+                        Nw[i]=Nw[i]+dw
+                        Nw[j]=Nw[j]-dw
                     else:
-                        Nw[i]=Nw[i]-wi*Nr[i]
-                        Nw[j]=Nw[j]+wi*Nr[i]
+                        Nw[i]=Nw[i]-dw
+                        Nw[j]=Nw[j]+dw
 
-                    #END Merger-Spinoff exchange
+                    #END All in trade
                 
                 SI[i]=0 #free
                 cuda.syncthreads() #wait for all threads to load their status
@@ -128,7 +139,7 @@ def gpu_MCSepoch(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis):
 
 
 @cuda.jit
-def gpu_MCSfollow(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis,agent):
+def gpu_MCSfollow(Nw,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis,agent):
     
     #get thread id and block id
     idx=cuda.threadIdx.x 
@@ -167,20 +178,25 @@ def gpu_MCSfollow(Nw,Nr,SI,SJ,wmin,L1,L2,rng_states,M,N,Na,Wis,agent):
 
                 if wi>wmin and wj>wmin: #check if wealths are above the minimum
 
-                    #START Merger-Spinoff exchange
+                    #START All in trade
 
-                    #choosse winner
+                    if wi<wj:
+                        dw=wi
+                    else:
+                        dw=wj
+
+                    #choose epsilon
                     n=bool(int(xoroshiro128p_uniform_float32(rng_states, i)+0.5))
                     
                     #perform exchange
                     if n:
-                        Nw[i]=Nw[i]+wj*Nr[j]
-                        Nw[j]=Nw[j]-wj*Nr[j]
+                        Nw[i]=Nw[i]+dw
+                        Nw[j]=Nw[j]-dw
                     else:
-                        Nw[i]=Nw[i]-wi*Nr[i]
-                        Nw[j]=Nw[j]+wi*Nr[i]
+                        Nw[i]=Nw[i]-dw
+                        Nw[j]=Nw[j]+dw
 
-                    #END Merger-Spinoff exchange
+                    #END All in trade
                 
                 SI[i]=0 #free
                 cuda.syncthreads() #wait for all threads to load their status
