@@ -2,7 +2,7 @@
 <img src="resources/logo.png" width="320">
 </h1><br>
 
-#### **cuTradeNet** is a library that provides classes to easily create & run [*kinetic wealth exchange models*](https://rf.mokslasplius.lt/elementary-kinetic-exchange-models/ "online mini simulations") on complex networks. 
+### **cuTradeNet** is a library that provides classes to easily create & run [*kinetic wealth exchange models*](https://rf.mokslasplius.lt/elementary-kinetic-exchange-models/ "online mini simulations") on complex networks. 
 
 Leads the user to set one (or ensemble) of *complex networks* as a contact structure agents use to trade about. The following wealth exchange models were implemented:
 * [Yard-sale model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
