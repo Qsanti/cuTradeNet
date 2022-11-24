@@ -4,8 +4,6 @@
 
 ### *cuTradeNet* library provides classes to easily create & run [*kinetic wealth exchange models*](https://rf.mokslasplius.lt/elementary-kinetic-exchange-models/ "online mini simulations") on complex networks.
 
-[![DOI](https://zenodo.org/badge/552182062.svg)](https://zenodo.org/badge/latestdoi/552182062)
-
 Leads the user to set one (or ensemble) of *complex networks* as a contact structure agents use to trade about. The following wealth exchange models were implemented:
 * [Yard-sale model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
 * [Merger-Spinoff model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
@@ -32,4 +30,4 @@ The repository is in [GitHub](https://github.com/Qsanti/cuTradeNet/), and you ca
 ### CUDA dependencies
 In order to use this library in your personal computer you should have a [CUDA capable gpu](https://developer.nvidia.com/cuda-gpus) and download the [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) for your OS. If you don't fulfill this requirementes you can always use it in [the cloud](https://colab.research.google.com/github/Qsanti/cuTradeNet/blob/master/Models%26Demo/Demo.ipynb). Don't hesitate to [contact us](https://github.com/Qsanti/cuTradeNet/discussions/ "cuTradeNet discussions") to get help!
 
-
+[![DOI](https://zenodo.org/badge/552182062.svg)](https://zenodo.org/badge/latestdoi/552182062)
