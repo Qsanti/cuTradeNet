@@ -1,3 +1,7 @@
+<h1 align="center">
+<img src="resources/logo.png" width="300">
+</h1><br>
+
 # cuTradeNet
 
 **cuTradeNet** is a library that provides classes to easily create & run [*kinetic wealth exchange models*](https://rf.mokslasplius.lt/elementary-kinetic-exchange-models/ "online mini simulations") on [*complex networks*](https://en.wikipedia.org/wiki/Complex_network "complex networks wiki"). 
