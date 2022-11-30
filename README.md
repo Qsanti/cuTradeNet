@@ -7,7 +7,10 @@
 Leads the user to set one (or ensemble) of *complex networks* as a contact structure agents use to trade about. The following wealth exchange models were implemented:
 * [Yard-sale model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
 * [Merger-Spinoff model](https://www.sciencedirect.com/science/article/pii/S0378437120309237 "model details here")
-* (+ models comming soon)
+* [Dragulescu and Yakovenko](https://arxiv.org/abs/cond-mat/0001432)
+* Constant model
+* [Chatterjee, Chakrabarti and Manna ](https://iopscience.iop.org/article/10.1238/Physica.Topical.106a00036) 
+* "All in" model
 
 It is written in Python and uses Cuda module from [Numba](https://numba.pydata.org/ "Numba page") package to accelerate the simulation runnin in GPU, *paralelizing some transaccions* in the same graph and *paralelizing runs* in multiple graphs, leading to  **easier** & **faster** averaging of system properties.
 It's completely abstracted from the CUDA knowledge for the user, so you can use it as a regular Python library.
