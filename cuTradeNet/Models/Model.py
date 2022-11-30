@@ -162,6 +162,11 @@ class NetModel:
         cumx = np.cumsum(sorted_x, dtype=np.float32, axis=1)
 
 
-        return (self.__Nnet + 1 - 2 * np.sum(cumx,axis=1) / cumx[:,-1]) / self.__Nnet
+        G=(self.__Nnet + 1 - 2 * np.sum(cumx,axis=1) / cumx[:,-1]) / self.__Nnet
+
+        if G<0:
+            G=0
+        
+        return G
 
         
